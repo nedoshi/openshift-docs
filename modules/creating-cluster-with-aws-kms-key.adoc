@@ -45,8 +45,21 @@ $ echo $KMS_ARN
 ----
 $ AWS_ACCOUNT_ID=<aws_account_id>
 ----
-. Add the ARN for the account-wide installer role and operator roles that you created in the preceding step to the `Statement.Principal.AWS` section in the file. In the following example, the ARN for the default `ManagedOpenShift-HCP-ROSA-Installer-Role` role is added:
 
+. Set your Account Role Prefix to an environment variable.
++
+[source,terminal]
+----
+$ ACCOUNT_ROLE_PREFIX=<account_role_prefix>
+----
+
+. Set your Operator Role Prefix to an environment variable.
++
+[source,terminal]
+----
+$ OPERATOR_ROLE_PREFIX=<operator_role_prefix>
+----
+. Add the ARN for the account-wide installer role and operator roles that you created in the preceding step to the `Statement.Principal.AWS` section in the file. In the following example, the ARN for the default `ManagedOpenShift-HCP-ROSA-Installer-Role` role is added:
 +
 [source,terminal]
 ----
@@ -54,67 +67,113 @@ $ AWS_ACCOUNT_ID=<aws_account_id>
   "Version": "2012-10-17",
   "Id": "key-rosa-policy-1",
   "Statement": [
-  {
-              "Sid": "Enable IAM User Permissions",
-              "Effect": "Allow",
-              "Principal": {
-                  "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:root"
-              },
-              "Action": "kms:*",
-              "Resource": "*"
-          },
-        {
-              "Sid": "Installer Permissions",
-              "Effect": "Allow",
-              "Principal": {
-                  "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ManagedOpenShift-HCP-ROSA-Installer-Role"
-              },
-              "Action": [
-                  "kms:CreateGrant",
-                  "kms:DescribeKey",
-                  "kms:GenerateDataKeyWithoutPlaintext"
-              ],
-              "Resource": "*"
-          },
-          {
-              "Sid": "ROSA KubeControllerManager Permissions",
-              "Effect": "Allow",
-              "Principal": {
-                  "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/<operator_role_prefix>-kube-system-kube-controller-manager"
-
-              },
-              "Action": "kms:DescribeKey",
-              "Resource": "*"
-          },
-          {
-              "Sid": "ROSA KMS Provider Permissions",
-              "Effect": "Allow",
-              "Principal": {
-                  "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/<operator_role_prefix>-kube-system-kms-provider"
-              },
-              "Action": [
-                  "kms:Encrypt",
-                  "kms:Decrypt",
-                  "kms:DescribeKey"
-              ],
-              "Resource": "*"
-          },
-          {
-              "Sid": "ROSA NodeManager Permissions",
-              "Effect": "Allow",
-              "Principal": {
-                  "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/<operator_role_prefix>-kube-system-capa-controller-manager"
-              },
-              "Action": [
-                  "kms:DescribeKey",
-                  "kms:GenerateDataKeyWithoutPlaintext",
-                  "kms:CreateGrant"
-              ],
-              "Resource": "*"
-          }
-      ]
-  } 
+    {
+      "Sid": "Enable IAM User Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:root"
+      },
+      "Action": "kms:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "Installer Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ACCOUNT_ROLE_PREFIX}-HCP-ROSA-Installer-Role"
+      },
+      "Action": [
+        "kms:CreateGrant",
+        "kms:DescribeKey",
+        "kms:GenerateDataKeyWithoutPlaintext"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "Support Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ACCOUNT_ROLE_PREFIX}-HCP-ROSA-Support-Role"
+      },
+      "Action": "kms:DescribeKey",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ROSA KubeControllerManager Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${OPERATOR_ROLES_PREFIX}-kube-system-kube-controller-manager"
+      },
+      "Action": "kms:DescribeKey",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ROSA KMS Provider Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${OPERATOR_ROLES_PREFIX}-kube-system-kms-provider"
+      },
+      "Action": [
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:DescribeKey"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ROSA NodeManager Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${OPERATOR_ROLES_PREFIX}-kube-system-capa-controller-manager"
+      },
+      "Action": [
+        "kms:DescribeKey",
+        "kms:GenerateDataKeyWithoutPlaintext",
+        "kms:CreateGrant"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ROSA EBS CSI Driver Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${OPERATOR_ROLES_PREFIX}-openshift-cluster-csi-drivers-ebs-cloud-credentials"
+      },
+      "Action": [
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ROSA EBS CSI Driver Grant Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${OPERATOR_ROLES_PREFIX}-openshift-cluster-csi-drivers-ebs-cloud-credentials"
+      },
+      "Action": [
+        "kms:CreateGrant",
+        "kms:RevokeGrant",
+        "kms:ListGrants"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      }
+    }
+  ]
+}
 ----
++
+[NOTE]
+====
+To encrypt PersistentVolumes with a custom KMS key, customers must include the EBS CSI driver's IAM role  in the KMS key policy
+====
 
 . Confirm the details of the policy file created by running the following command:
 +
@@ -124,7 +183,6 @@ $ cat rosa-key-policy.json
 ----
 
 . Apply the newly generated key policy to the custom KMS key by running the following command:
-
 +
 [source,terminal]
 ----
