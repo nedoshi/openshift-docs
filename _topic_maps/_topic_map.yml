@@ -2714,7 +2714,7 @@ Topics:
     File: hcp-recovering-etcd-cluster
   - Name: Backing up and restoring etcd in an on-premise environment
     File: hcp-backup-restore-on-premise
-  - Name: Backing up and restoring etcd on AWS
+  - Name: Backing up and restoring etcd on the management cluster
     File: hcp-backup-restore-aws
   - Name: Backing up and restoring a hosted cluster on OpenShift Virtualization
     File: hcp-backup-restore-virt
@@ -4949,9 +4949,9 @@ Topics:
     File: virt-enabling-cclm-for-vms
   - Name: Configuring a cross-cluster live migration network
     File: virt-configuring-cross-cluster-live-migration-network
-  - Name: About Migration Toolkit for Virtualization providers
+  - Name: About Migration Toolkit for Virtualization (MTV) providers
     File: virt-about-mtv-providers
-# Node maintenance mode
+  # Node maintenance mode
 - Name: Nodes
   Dir: nodes
   Topics:
